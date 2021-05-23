@@ -9,13 +9,6 @@ using System.Linq;
 
 namespace SniffCore.Mediation
 {
-    internal interface IMessage
-    {
-        public Type Key { get; set; }
-        bool IsAlive { get; }
-        void Remove(SubscribeToken subscribeToken);
-    }
-
     internal class Message<T> : IMessage
     {
         internal Message()
@@ -26,7 +19,7 @@ namespace SniffCore.Mediation
 
         private Dictionary<SubscribeToken, WeakAction<T>> Actions { get; }
 
-        public Type Key { get; set; }
+        public Type Key { get; }
 
         public bool IsAlive
         {

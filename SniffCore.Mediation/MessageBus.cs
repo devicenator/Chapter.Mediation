@@ -47,11 +47,11 @@ namespace SniffCore.Mediation
         private static IMessage GetOrCreateMessage<T>()
         {
             var messageContainer = GetMessage<T>();
-            if (messageContainer == null)
-            {
-                messageContainer = new Message<T>();
-                _messages.Add(messageContainer);
-            }
+            if (messageContainer != null)
+                return messageContainer;
+
+            messageContainer = new Message<T>();
+            _messages.Add(messageContainer);
 
             return messageContainer;
         }
