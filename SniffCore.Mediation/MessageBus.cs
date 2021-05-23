@@ -44,6 +44,12 @@ namespace SniffCore.Mediation
                 Unsubscribe(listenToken);
         }
 
+        public static void Unsubscribe(params SubscribeToken[] listenTokens)
+        {
+            foreach (var listenToken in listenTokens)
+                Unsubscribe(listenToken);
+        }
+
         private static IMessage GetOrCreateMessage<T>()
         {
             var messageContainer = GetMessage<T>();
