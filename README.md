@@ -4,8 +4,8 @@ SniffCore.Mediation
 SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment
 
 ## How To
-* [GitHub Wiki](https://github.com/devicenator/SniffCore.Mediation/wiki)
-* [Website](http://my-libraries.com/wiki/SniffCore.Mediation)
+* [Documentation](http://wiki.sniffcore.com)
+* [Website](http://sniffcore.com)
 
 ## License
 
