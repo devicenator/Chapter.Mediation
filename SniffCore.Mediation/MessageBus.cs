@@ -29,9 +29,13 @@ namespace SniffCore.Mediation
         /// <typeparam name="T">The object type to listen for.</typeparam>
         /// <param name="callback">The callback to call if the corresponding object got sent.</param>
         /// <returns>The subscribe token to maintain the subscription.</returns>
+        /// <exception cref="ArgumentNullException">callback is null.</exception>
         public static SubscribeToken Subscribe<T>(Action<T> callback)
         {
-            var messageContainer = (Message<T>) GetOrCreateMessage<T>();
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            var messageContainer = GetOrCreateMessage<T>();
             return messageContainer.Add(callback);
         }
 
@@ -40,10 +44,14 @@ namespace SniffCore.Mediation
         /// </summary>
         /// <typeparam name="T">The object type to send.</typeparam>
         /// <param name="implementation">The object other may listen for.</param>
+        /// <exception cref="ArgumentNullException">implementation is null.</exception>
         public static void Notify<T>(T implementation)
         {
+            if (implementation == null)
+                throw new ArgumentNullException(nameof(implementation));
+
             RemoveDead();
-            var messageContainer = (Message<T>) GetMessage<T>();
+            var messageContainer = GetMessage<T>();
             messageContainer?.Send(implementation);
         }
 
@@ -51,8 +59,12 @@ namespace SniffCore.Mediation
         ///     Removes a specific subscriptions by the token.
         /// </summary>
         /// <param name="subscribeToken">The token for the subscription to remove.</param>
+        /// <exception cref="ArgumentNullException">subscribeToken is null.</exception>
         public static void Unsubscribe(SubscribeToken subscribeToken)
         {
+            if (subscribeToken == null)
+                throw new ArgumentNullException(nameof(subscribeToken));
+
             foreach (var message in _messages)
                 message.Remove(subscribeToken);
             RemoveDead();
@@ -62,8 +74,12 @@ namespace SniffCore.Mediation
         ///     Removes all subscriptions by their token.
         /// </summary>
         /// <param name="listenTokens">A collection of tokens to remove.</param>
+        /// <exception cref="ArgumentNullException">listenTokens is null.</exception>
         public static void Unsubscribe(IEnumerable<SubscribeToken> listenTokens)
         {
+            if (listenTokens == null)
+                throw new ArgumentNullException(nameof(listenTokens));
+
             foreach (var listenToken in listenTokens)
                 Unsubscribe(listenToken);
         }
@@ -72,13 +88,17 @@ namespace SniffCore.Mediation
         ///     Removes all subscriptions by their token.
         /// </summary>
         /// <param name="listenTokens">A collection of tokens to remove.</param>
+        /// <exception cref="ArgumentNullException">listenTokens is null.</exception>
         public static void Unsubscribe(params SubscribeToken[] listenTokens)
         {
+            if (listenTokens == null)
+                throw new ArgumentNullException(nameof(listenTokens));
+
             foreach (var listenToken in listenTokens)
                 Unsubscribe(listenToken);
         }
 
-        private static IMessage GetOrCreateMessage<T>()
+        private static Message<T> GetOrCreateMessage<T>()
         {
             var messageContainer = GetMessage<T>();
             if (messageContainer != null)
@@ -90,9 +110,9 @@ namespace SniffCore.Mediation
             return messageContainer;
         }
 
-        private static IMessage GetMessage<T>()
+        private static Message<T> GetMessage<T>()
         {
-            return _messages.FirstOrDefault(m => m.Key == typeof(T));
+            return _messages.FirstOrDefault(m => m.Key == typeof(T)) as Message<T>;
         }
 
         private static void RemoveDead()
