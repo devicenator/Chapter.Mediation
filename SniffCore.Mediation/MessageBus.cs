@@ -14,6 +14,49 @@ namespace SniffCore.Mediation
     /// <summary>
     ///     Brings possibility to communicate between modules not knowing each other.
     /// </summary>
+    /// <example>
+    ///     <code lang="csharp">
+    /// <![CDATA[
+    /// public class MessageData
+    /// {
+    ///     public MessageData(string message)
+    ///     {
+    ///         Message = message;
+    ///     }
+    /// 
+    ///     public string Message { get; }
+    /// }
+    /// 
+    /// public class ViewModel1
+    /// {
+    ///     public void Send(string message)
+    ///     {
+    ///         MessageBus.Notify(new MessageData(message));
+    ///     }
+    /// }
+    /// 
+    /// public class ViewModel2 : IDisposable
+    /// {
+    ///     private readonly SubscribeToken _subscribeToken;
+    /// 
+    ///     public ViewModel2()
+    ///     {
+    ///         _subscribeToken = MessageBus.Subscribe<MessageData>(OnMessageReceived);
+    ///     }
+    /// 
+    ///     private void OnMessageReceived(MessageData obj)
+    ///     {
+    ///         var message = obj.Message;
+    ///     }
+    /// 
+    ///     public void Dispose()
+    ///     {
+    ///         MessageBus.Unsubscribe(_subscribeToken);
+    ///     }
+    /// }
+    /// ]]>
+    /// </code>
+    /// </example>
     public static class MessageBus
     {
         private static readonly List<IMessage> _messages;
