@@ -12,7 +12,7 @@ namespace SniffCore.Mediation
     /// </summary>
     public sealed class SubscribeToken : IEquatable<SubscribeToken>
     {
-        private Guid _guid;
+        private readonly Guid _guid;
 
         internal SubscribeToken()
         {
@@ -31,6 +31,27 @@ namespace SniffCore.Mediation
                 throw new ArgumentNullException(nameof(other));
 
             return _guid.Equals(other._guid);
+        }
+
+        /// <summary>
+        ///     Compares this token to another object.
+        /// </summary>
+        /// <param name="obj">The other object to compare.</param>
+        /// <returns>True if the token equals; otherwise false.</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is SubscribeToken other)
+                return Equals(other);
+            return false;
+        }
+
+        /// <summary>
+        ///     Returns the hash code of this token.
+        /// </summary>
+        /// <returns>The hash code of this token.</returns>
+        public override int GetHashCode()
+        {
+            return _guid.GetHashCode();
         }
     }
 }
