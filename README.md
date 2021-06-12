@@ -1,7 +1,7 @@
 SniffCore.Mediation
 ===
 
-SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment
+SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment.
 
 ## How To
 * [Documentation](http://documentation.sniffcore.com/)
