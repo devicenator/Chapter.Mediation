@@ -4,6 +4,7 @@ SniffCore.Mediation
 SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment.
 
 ## How To
+* [NuGet](https://www.nuget.org/packages/SniffCore.Mediation)
 * [Documentation](http://documentation.sniffcore.com/)
 * [Website](http://sniffcore.com)
 
