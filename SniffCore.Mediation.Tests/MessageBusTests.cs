@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+using System.Windows.Threading;
 using NUnit.Framework;
 
 namespace SniffCore.Mediation.Tests
@@ -8,116 +7,132 @@ namespace SniffCore.Mediation.Tests
     [TestFixture]
     public class MessageBusTests
     {
-        [Test]
-        public void Subscribe_CalledWithNullCallback_ThrowsException()
+        [SetUp]
+        public void Setup()
         {
-            Action<string> callback = null;
+            _target = new MessageBus();
+            _dispatcher = Dispatcher.CurrentDispatcher;
+        }
 
-            var action = new TestDelegate(() => MessageBus.Subscribe(callback));
+        private MessageBus _target;
+        private Dispatcher _dispatcher;
+
+        [Test]
+        public void Subscribe_WithNullCallback_RaisesException()
+        {
+            var action = new TestDelegate(() => _target.Subscribe<string>(null));
 
             Assert.Throws<ArgumentNullException>(action);
         }
 
         [Test]
-        public void Subscribe_CalledWithCallback_GetsNotification()
+        public void Subscribe_OnString_GetsCalledOnNotify()
         {
-            var triggered = false;
-            Action<string> callback = s => triggered = true;
-
-            MessageBus.Subscribe(callback);
-
-            MessageBus.Notify("message");
-            Assert.That(triggered, Is.True);
-        }
-
-        [Test]
-        public void Subscribe_CalledWithCallbackForOtherType_GetsNoNotification()
-        {
-            var triggered = false;
-            Action<string> callback = s => triggered = true;
-
-            MessageBus.Subscribe(callback);
-
-            MessageBus.Notify(13);
-            Assert.That(triggered, Is.False);
-        }
-
-        [Test]
-        public void Notify_CalledWithNullMessage_ThrowsException()
-        {
-            var action = new TestDelegate(() => MessageBus.Notify<string>(null));
-
-            Assert.Throws<ArgumentNullException>(action);
-        }
-
-        [Test]
-        public void Unsubscribe_CalledWithNullToken_ThrowsException()
-        {
-            SubscribeToken token = null;
-
-            var action = new TestDelegate(() => MessageBus.Unsubscribe(token));
-
-            Assert.Throws<ArgumentNullException>(action);
-        }
-
-        [Test]
-        public void Unsubscribe_CalledWithToken_RemovesIt()
-        {
-            var token = MessageBus.Subscribe<string>(s =>
+            var triggered = string.Empty;
+            void Callback(string parameter)
             {
-                Assert.Fail("Callback not expected");
-            });
+                triggered = parameter;
+            }
+
+            _target.Subscribe<string>(Callback);
+
+            _target.Publish("Hans");
+            Assert.That(triggered, Is.EqualTo("Hans"));
+        }
+
+        [Test]
+        public void Subscribe_OnStringAndInt_GetsAllCalledOnNotify()
+        {
+            var triggeredString = string.Empty;
+            void CallbackString(string parameter)
+            {
+                triggeredString = parameter;
+            }
+            var triggeredint = 0;
+            void CallbackInt(int parameter)
+            {
+                triggeredint = parameter;
+            }
+
+            _target.Subscribe<string>(CallbackString);
+            _target.Subscribe<int>(CallbackInt);
             
-            MessageBus.Unsubscribe(token);
+            _target.Publish("Hans");
+            _target.Publish(13);
 
-            MessageBus.Notify("Peter");
+            Assert.That(triggeredString, Is.EqualTo("Hans"));
+            Assert.That(triggeredint, Is.EqualTo(13));
         }
 
         [Test]
-        public void Unsubscribe_CalledWithNullList_ThrowsException()
+        public void Subscribe_OnStringOnDispatcher_GetsCalledOnNotify()
         {
-            List<SubscribeToken> tokens = null;
-
-            var action = new TestDelegate(() => MessageBus.Unsubscribe(tokens));
-
-            Assert.Throws<ArgumentNullException>(action);
-        }
-
-        [Test]
-        public void Unsubscribe_CalledWithTokenList_RemovesThem()
-        {
-            var tokens = new List<SubscribeToken>
+            var triggered = string.Empty;
+            void Callback(string parameter)
             {
-                MessageBus.Subscribe<string>(s => { Assert.Fail("Callback not expected"); }),
-                MessageBus.Subscribe<int>(s => { Assert.Fail("Callback not expected"); })
-            };
+                triggered = parameter;
+            }
 
-            MessageBus.Unsubscribe(tokens);
+            _target.Subscribe<string>(Callback).On(_dispatcher);
 
-            MessageBus.Notify("Peter");
-            MessageBus.Notify(13);
+            _target.Publish("Hans");
+            Assert.That(triggered, Is.EqualTo("Hans"));
         }
 
         [Test]
-        public void Unsubscribe_CalledWithNullArray_ThrowsException()
+        public void Subscribe_OnStringButAfterDispose_DoesNotNotifyAnymore()
         {
-            SubscribeToken[] tokens = null;
+            var triggered = string.Empty;
+            void Callback(string parameter)
+            {
+                triggered = parameter;
+            }
+            var subscriber = _target.Subscribe<string>(Callback);
 
-            var action = new TestDelegate(() => MessageBus.Unsubscribe(tokens));
+            subscriber.Dispose();
 
-            Assert.Throws<ArgumentNullException>(action);
+            _target.Publish("Hans");
+            Assert.That(triggered, Is.EqualTo(string.Empty));
         }
 
         [Test]
-        public void Unsubscribe_CalledWithTokenParams_RemovesThem()
+        public void Subscribe_OnIntAfterStringGotDisposed_GetsCalledOnNotify()
         {
-            var token1 = MessageBus.Subscribe<string>(s => { Assert.Fail("Callback not expected"); });
-            var token2 = MessageBus.Subscribe<int>(s => { Assert.Fail("Callback not expected"); });
+            var triggeredString = string.Empty;
+            void CallbackString(string parameter)
+            {
+                triggeredString = parameter;
+            }
+            var triggeredint = 0;
+            void CallbackInt(int parameter)
+            {
+                triggeredint = parameter;
+            }
+            var stringSubscriber = _target.Subscribe<string>(CallbackString);
+            var intSubscriber = _target.Subscribe<int>(CallbackInt);
 
-            MessageBus.Unsubscribe(token1, token2);
+            stringSubscriber.Dispose();
 
-            MessageBus.Notify("Peter");
-            MessageBus.Notify(13);
+            _target.Publish("Hans");
+            _target.Publish(13);
+
+            Assert.That(triggeredString, Is.EqualTo(string.Empty));
+            Assert.That(triggeredint, Is.EqualTo(13));
+        }
+
+        [Test]
+        public void Subscribe_OnStringButIntegerRaised_DoesNotGetCalled()
+        {
+            var triggered = string.Empty;
+            void Callback(string parameter)
+            {
+                triggered = parameter;
+            }
+
+            _target.Subscribe<string>(Callback).On(_dispatcher);
+
+            _target.Publish(13);
+            Assert.That(triggered, Is.EqualTo(string.Empty));
         }
     }
 }

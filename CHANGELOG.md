@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 Subscribe on Dispatcher
 
 ## [Unreleased]
+### Change
+Renewed the MessageBus completely
 
 ## [1.0.0] - 2021-06-13
 ### Added

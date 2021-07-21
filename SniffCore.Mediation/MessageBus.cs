@@ -1,166 +1,76 @@
-﻿//
-// Copyright (c) David Wendland. All rights reserved.
-// Licensed under the MIT License. See LICENSE file in the project root for full license information.
-//
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// ReSharper disable MemberCanBePrivate.Global
-
 namespace SniffCore.Mediation
 {
-    /// <summary>
-    ///     Brings possibility to communicate between modules not knowing each other.
-    /// </summary>
-    /// <example>
-    ///     <code lang="csharp">
-    /// <![CDATA[
-    /// public class MessageData
-    /// {
-    ///     public MessageData(string message)
-    ///     {
-    ///         Message = message;
-    ///     }
-    /// 
-    ///     public string Message { get; }
-    /// }
-    /// 
-    /// public class ViewModel1
-    /// {
-    ///     public void Send(string message)
-    ///     {
-    ///         MessageBus.Notify(new MessageData(message));
-    ///     }
-    /// }
-    /// 
-    /// public class ViewModel2 : IDisposable
-    /// {
-    ///     private readonly SubscribeToken _subscribeToken;
-    /// 
-    ///     public ViewModel2()
-    ///     {
-    ///         _subscribeToken = MessageBus.Subscribe<MessageData>(OnMessageReceived);
-    ///     }
-    /// 
-    ///     private void OnMessageReceived(MessageData obj)
-    ///     {
-    ///         var message = obj.Message;
-    ///     }
-    /// 
-    ///     public void Dispose()
-    ///     {
-    ///         MessageBus.Unsubscribe(_subscribeToken);
-    ///     }
-    /// }
-    /// ]]>
-    /// </code>
-    /// </example>
-    public static class MessageBus
+    /// <inheritdoc />
+    public class MessageBus : IMessageBus
     {
-        private static readonly List<IMessage> _messages;
-
-        static MessageBus()
-        {
-            _messages = new List<IMessage>();
-        }
+        private readonly Dictionary<Type, List<ISubscriber>> _subscribers;
 
         /// <summary>
-        ///     Subscribes to an object been sent.
+        /// Creates a new instance of <see cref="MessageBus"/>.
         /// </summary>
-        /// <typeparam name="T">The object type to listen for.</typeparam>
-        /// <param name="callback">The callback to call if the corresponding object got sent.</param>
-        /// <returns>The subscribe token to maintain the subscription.</returns>
-        /// <exception cref="ArgumentNullException">callback is null.</exception>
-        public static SubscribeToken Subscribe<T>(Action<T> callback)
+        public MessageBus()
+        {
+            _subscribers = new Dictionary<Type, List<ISubscriber>>();
+        }
+
+        /// <inheritdoc />
+        public ISubscriber Subscribe<T>(Action<T> callback)
         {
             if (callback == null)
                 throw new ArgumentNullException(nameof(callback));
 
-            var messageContainer = GetOrCreateMessage<T>();
-            return messageContainer.Add(callback);
+            var type = typeof(T);
+            if (!_subscribers.ContainsKey(type))
+                _subscribers[type] = new List<ISubscriber>();
+
+            var subscriber = new Subscriber<T>(callback);
+            subscriber.Disposed += OnDisposed;
+            _subscribers[type].Add(subscriber);
+
+            return subscriber;
         }
 
-        /// <summary>
-        ///     Sends an object to ite subscribers.
-        /// </summary>
-        /// <typeparam name="T">The object type to send.</typeparam>
-        /// <param name="implementation">The object other may listen for.</param>
-        /// <exception cref="ArgumentNullException">implementation is null.</exception>
-        public static void Notify<T>(T implementation)
+        private void OnDisposed(object sender, EventArgs e)
         {
-            if (implementation == null)
-                throw new ArgumentNullException(nameof(implementation));
+            var subscriber = (ISubscriber) sender;
+            subscriber.Disposed -= OnDisposed;
 
-            RemoveDead();
-            var messageContainer = GetMessage<T>();
-            messageContainer?.Send(implementation);
+            foreach (var (_, value) in _subscribers)
+            {
+                if (!value.Contains(sender))
+                    continue;
+
+                value.Remove(subscriber);
+                break;
+            }
+
+            ClearEmpty();
         }
 
-        /// <summary>
-        ///     Removes a specific subscriptions by the token.
-        /// </summary>
-        /// <param name="subscribeToken">The token for the subscription to remove.</param>
-        /// <exception cref="ArgumentNullException">subscribeToken is null.</exception>
-        public static void Unsubscribe(SubscribeToken subscribeToken)
+        private void ClearEmpty()
         {
-            if (subscribeToken == null)
-                throw new ArgumentNullException(nameof(subscribeToken));
-
-            foreach (var message in _messages)
-                message.Remove(subscribeToken);
-            RemoveDead();
+            var keys = _subscribers.Keys.ToList();
+            foreach (var key in keys)
+            {
+                if (!_subscribers[key].Any())
+                    _subscribers.Remove(key);
+            }
         }
 
-        /// <summary>
-        ///     Removes all subscriptions by their token.
-        /// </summary>
-        /// <param name="listenTokens">A collection of tokens to remove.</param>
-        /// <exception cref="ArgumentNullException">listenTokens is null.</exception>
-        public static void Unsubscribe(IEnumerable<SubscribeToken> listenTokens)
+        /// <inheritdoc />
+        public void Publish<T>(T item)
         {
-            if (listenTokens == null)
-                throw new ArgumentNullException(nameof(listenTokens));
+            var type = typeof(T);
+            if (!_subscribers.ContainsKey(type))
+                return;
 
-            foreach (var listenToken in listenTokens)
-                Unsubscribe(listenToken);
-        }
-
-        /// <summary>
-        ///     Removes all subscriptions by their token.
-        /// </summary>
-        /// <param name="listenTokens">A collection of tokens to remove.</param>
-        /// <exception cref="ArgumentNullException">listenTokens is null.</exception>
-        public static void Unsubscribe(params SubscribeToken[] listenTokens)
-        {
-            if (listenTokens == null)
-                throw new ArgumentNullException(nameof(listenTokens));
-
-            foreach (var listenToken in listenTokens)
-                Unsubscribe(listenToken);
-        }
-
-        private static Message<T> GetOrCreateMessage<T>()
-        {
-            var messageContainer = GetMessage<T>();
-            if (messageContainer != null)
-                return messageContainer;
-
-            messageContainer = new Message<T>();
-            _messages.Add(messageContainer);
-
-            return messageContainer;
-        }
-
-        private static Message<T> GetMessage<T>()
-        {
-            return _messages.FirstOrDefault(m => m.Key == typeof(T)) as Message<T>;
-        }
-
-        private static void RemoveDead()
-        {
-            _messages.RemoveAll(m => !m.IsAlive);
+            var subscribers = _subscribers[type].Select(x => (Subscriber<T>) x).ToList();
+            foreach (var subscriber in subscribers)
+                subscriber.Invoke(item);
         }
     }
 }
