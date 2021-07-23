@@ -10,7 +10,7 @@ Subscribe on Dispatcher
 
 ## [2.0.0] - 2021-07-21
 ### Change
-Renewed the MessageBus completely
+* Renewed the MessageBus completely
 
 ## [1.0.0] - 2021-06-13
 ### Added
