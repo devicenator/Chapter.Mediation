@@ -5,7 +5,7 @@
     <UseWPF>true</UseWPF>
     <Description>SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment.</Description>
     <Authors>David Wendland</Authors>
-    <Copyright>Copyright (c) 2021 David Wendland</Copyright>
+    <Copyright>Copyright (c) 2022 David Wendland</Copyright>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageProjectUrl>http://www.sniffcore.com</PackageProjectUrl>
     <PackageIcon>Icon.png</PackageIcon>
