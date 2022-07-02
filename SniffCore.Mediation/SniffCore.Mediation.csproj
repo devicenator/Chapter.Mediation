@@ -1,32 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <UseWPF>true</UseWPF>
-    <Description>SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment.</Description>
-    <Authors>David Wendland</Authors>
-    <Copyright>Copyright (c) 2022 David Wendland</Copyright>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageProjectUrl>http://www.sniffcore.com</PackageProjectUrl>
-    <PackageIcon>Icon.png</PackageIcon>
-    <PackageIconUrl />
-    <RepositoryUrl>https://github.com/devicenator/SniffCore.Mediation</RepositoryUrl>
-    <Version>2.0.0</Version>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <UseWpf>true</UseWpf>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp3.1\SniffCore.Mediation.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\Icon.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
 
 </Project>
