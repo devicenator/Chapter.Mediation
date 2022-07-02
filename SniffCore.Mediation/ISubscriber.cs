@@ -6,23 +6,22 @@
 using System;
 using System.Windows.Threading;
 
-namespace SniffCore.Mediation
+namespace SniffCore.Mediation;
+
+/// <summary>
+///     Represents a single subscription on an object type.
+/// </summary>
+public interface ISubscriber : IDisposable
 {
     /// <summary>
-    ///     Represents a single subscription on an object type.
+    ///     Gets raised if this subscriber got disposed.
     /// </summary>
-    public interface ISubscriber : IDisposable
-    {
-        /// <summary>
-        ///     Gets raised if this subscriber got disposed.
-        /// </summary>
-        public event EventHandler Disposed;
+    public event EventHandler Disposed;
 
-        /// <summary>
-        ///     Enables the dispatcher the callback gets invoked on.
-        /// </summary>
-        /// <param name="dispatcher">The dispatcher the callback gets invoked on.</param>
-        /// <returns>The subscriber.</returns>
-        ISubscriber On(Dispatcher dispatcher);
-    }
+    /// <summary>
+    ///     Enables the dispatcher the callback gets invoked on.
+    /// </summary>
+    /// <param name="dispatcher">The dispatcher the callback gets invoked on.</param>
+    /// <returns>The subscriber.</returns>
+    ISubscriber On(Dispatcher dispatcher);
 }
