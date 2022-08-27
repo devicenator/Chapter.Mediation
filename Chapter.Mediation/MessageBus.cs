@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SniffCore.Mediation;
+namespace Chapter.Mediation;
 
 /// <inheritdoc />
 public class MessageBus : IMessageBus

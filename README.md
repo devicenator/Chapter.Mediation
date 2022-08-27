@@ -1,11 +1,11 @@
-SniffCore.Mediation
+Chapter.Mediation
 ===
 
-SniffCore.Mediation provides objects for a proper communication between modules in an MVVM environment.
+Chapter.Mediation provides objects for a proper communication between modules in an MVVM environment.
 
 ## Links
-* [NuGet](https://www.nuget.org/packages/SniffCore.Mediation)
-* [GitHub](https://github.com/devicenator/SniffCore.Mediation)
+* [NuGet](https://www.nuget.org/packages/Chapter.Mediation)
+* [GitHub](https://github.com/devicenator/Chapter.Mediation)
 
 ## License
 Copyright (c) David Wendland. All rights reserved.  

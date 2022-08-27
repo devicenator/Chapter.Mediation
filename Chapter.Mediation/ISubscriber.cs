@@ -4,9 +4,8 @@
 // 
 
 using System;
-using System.Windows.Threading;
 
-namespace SniffCore.Mediation;
+namespace Chapter.Mediation;
 
 /// <summary>
 ///     Represents a single subscription on an object type.
@@ -21,7 +20,7 @@ public interface ISubscriber : IDisposable
     /// <summary>
     ///     Enables the dispatcher the callback gets invoked on.
     /// </summary>
-    /// <param name="dispatcher">The dispatcher the callback gets invoked on.</param>
+    /// <param name="scheduler">The scheduler the callback gets invoked on.</param>
     /// <returns>The subscriber.</returns>
-    ISubscriber On(Dispatcher dispatcher);
+    ISubscriber On(IScheduler scheduler);
 }

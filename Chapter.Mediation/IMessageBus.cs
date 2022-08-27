@@ -5,7 +5,7 @@
 
 using System;
 
-namespace SniffCore.Mediation;
+namespace Chapter.Mediation;
 
 /// <summary>
 ///     Brings possibility to communicate between modules not knowing each other.
@@ -30,7 +30,7 @@ namespace SniffCore.Mediation;
 ///         _subscribers = new List<ISubscriber>
 ///         {
 ///             messageBus.Subscribe<string>(OnStringReceived),
-///             messageBus.Subscribe<int>(OnIntReceived).On(Dispatcher.CurrentDispatcher)
+///             messageBus.Subscribe<int>(OnIntReceived).On(new Scheduler(Dispatcher.CurrentDispatcher))
 ///         };
 ///     }
 /// 

@@ -4,9 +4,8 @@
 // 
 
 using System;
-using System.Windows.Threading;
 
-namespace SniffCore.Mediation;
+namespace Chapter.Mediation;
 
 /// <summary>
 ///     Represents a single subscription on an object type.
@@ -16,7 +15,7 @@ public class Subscriber<T> : ISubscriber
 {
     private readonly Guid _instance;
     private Action<T> _callback;
-    private Dispatcher _dispatcher;
+    private IScheduler _scheduler;
 
     internal Subscriber(Action<T> callback)
     {
@@ -28,9 +27,9 @@ public class Subscriber<T> : ISubscriber
     public event EventHandler Disposed;
 
     /// <inheritdoc />
-    public ISubscriber On(Dispatcher dispatcher)
+    public ISubscriber On(IScheduler scheduler)
     {
-        _dispatcher = dispatcher;
+        _scheduler = scheduler;
         return this;
     }
 
@@ -45,8 +44,8 @@ public class Subscriber<T> : ISubscriber
 
     internal void Invoke(T obj)
     {
-        if (_dispatcher != null)
-            _dispatcher.Invoke(() => _callback?.Invoke(obj));
+        if (_scheduler != null)
+            _scheduler.Invoke(() => _callback?.Invoke(obj));
         else
             _callback?.Invoke(obj);
     }
